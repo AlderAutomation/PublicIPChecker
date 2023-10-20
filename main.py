@@ -1,21 +1,30 @@
 import os
 import configs
+import socket
 
 class public_ip_checker () :
     def __init__(self) -> None:
         self.write_api_call_to_ip_file("./current_ip.txt")
-        self.last_ip: str = self.extract_ip_from_text("./last_ip.txt")
-        self.current_ip: str = self.get_current_pub_ip()
-        self.notify = Notification()
-        self.ERRORIPMSG = "public_IP_has_Changed_check_DNS_and_AA_Site"
+        self.current_pub_ip: str = self.get_current_pub_ip()
+        self.notify: object = Notification()
+        self.ERRORIPMSG: str = "public_IP_has_Changed_check_DNS_and_AA_Site"
+        self.dns_ip:str = self.get_dns_ip()
 
+
+    def get_dns_ip(self) -> None: 
+        """Get the dns ip address of domain name"""
+        
+        dns_ip:str = socket.getaddrinfo('alderautomation.ca', 80)[0][4][0]
+
+        return dns_ip
+    
 
     def get_current_pub_ip(self) -> str: 
         """Extracts and returns the Public IP from current_ip.txt"""
 
-        current_ip:str = self.extract_ip_from_text("./current_ip.txt")
+        current_pub_ip:str = self.extract_ip_from_text("./current_ip.txt")
 
-        return current_ip
+        return current_pub_ip
 
 
     def write_api_call_to_ip_file(self, ip_file:str) -> None:
@@ -24,12 +33,15 @@ class public_ip_checker () :
         os.system(f"curl -sS -o ./{ip_file} http://ip4only.me/api/")
 
 
-    def compare_ips(self) -> bool: 
+    def compare_ips(self, one:str, two:str) -> bool: 
         """Compares the current IP and the Last IP"""
 
         is_same_ip = True
 
-        if self.current_ip != self.last_ip: 
+        print(one)
+        print(two)
+
+        if one != two: 
             is_same_ip = False
 
         return is_same_ip
@@ -48,12 +60,6 @@ class public_ip_checker () :
         return data
     
 
-# TODO need a way to update the Old IP once the ip has been changed OR we need a way to check 
-# DNS ip instead of old IP which would be better methodology anyway 
-
-
-
-
 class Notification() : 
     def __init__(self) -> None:
         self.WEBHOOK = configs.WEBHOOK
@@ -69,7 +75,8 @@ class Notification() :
 
 def main():
     pubip = public_ip_checker()
-    if pubip.compare_ips() == False:
+
+    if pubip.compare_ips(pubip.dns_ip, pubip.current_pub_ip) == False:
         print("different")
         pubip.notify.teams_message(pubip.ERRORIPMSG)
 
