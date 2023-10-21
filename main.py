@@ -1,4 +1,5 @@
 import os
+import configs
 
 class public_ip_checker () :
     def __init__(self) -> None:
@@ -46,19 +47,26 @@ class public_ip_checker () :
 
 
 class Notification() : 
+    def __init__(self) -> None:
+        self.WEBHOOK = configs.WEBHOOK
+
+
     def teams_message(self, message:str) -> None: 
-        os.system(f"./teams_message.sh {message}")
+        os.system(f"./teams_message.sh {message} {self.WEBHOOK}")
+
 
     def email(self, message:str) -> None:
         pass
 
 
 def main():
-    pubip = public_ip_checker()
-    if pubip.compare_ips() == False:
-        print("different")
-        pubip.notify.teams_message(pubip.ERRORIPMSG)
+    # pubip = public_ip_checker()
+    # if pubip.compare_ips() == False:
+    #     print("different")
+    #     pubip.notify.teams_message(pubip.ERRORIPMSG)
 
+    notify = Notification()
+    notify.teams_message("test")
 
 if __name__ == "__main__":
     main()
