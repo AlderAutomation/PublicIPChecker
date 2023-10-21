@@ -1,6 +1,13 @@
 import os
 import configs
 import socket
+import logging
+
+
+LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
+logging.basicConfig(filename="pub_ip_log.log", level=logging.DEBUG, format = LOG_FORMAT)
+logger = logging.getLogger()
+
 
 class public_ip_checker () :
     def __init__(self) -> None:
@@ -38,9 +45,6 @@ class public_ip_checker () :
 
         is_same_ip = True
 
-        print(one)
-        print(two)
-
         if one != two: 
             is_same_ip = False
 
@@ -75,6 +79,8 @@ class Notification() :
 
 def main():
     pubip = public_ip_checker()
+
+    logger.debug(f"DNS IP is: {pubip.dns_ip} and Public IP is: {pubip.current_pub_ip}")
 
     if pubip.compare_ips(pubip.dns_ip, pubip.current_pub_ip) == False:
         print("different")
